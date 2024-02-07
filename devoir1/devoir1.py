@@ -58,24 +58,17 @@ def plot_solutions(N_cases, order, file_name):
     plt.show()
     return error_L1,error_L2,error_Linfini
 
-def plot_convergence(N_cases, order):
-    return 0
-
-
-
 time0 = time.time()
 
 # First order plot solution
 N_cases = [ 5, 10, 20, 40, 80]
 order = 1
 errors_values_1_L1,errors_values_1_L2,errorLinf_1 = plot_solutions(N_cases, order, file_name='solution_1stOrder.png')
-plot_convergence(N_cases, order)
 
 # Second order plot solution 
 N_cases = [ 5, 10, 20, 40, 80]
 order = 2
 errors_values_2_L1,errors_values_2_L2,errorLinf_2 = plot_solutions(N_cases, order, file_name='solution_2ndOrder.png')
-plot_convergence(N_cases, order)
 
 print('time required: ', time.time() - time0)
 

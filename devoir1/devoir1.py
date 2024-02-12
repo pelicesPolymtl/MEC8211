@@ -20,7 +20,7 @@ import time
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
-import solve_fick
+import solve_FICK as solve_fick
 
 def plot_solutions(n_cases_ext, Order, file_name):
     '''
@@ -121,15 +121,10 @@ def plot_erreurs(errors_values_l1,errors_values_l2,error_linf,Order):
     plt.grid(True)
     plt.show()
 
-<<<<<<< HEAD
-plot_erreurs(errors_values_1_L1,errors_values_1_L2,errorLinf_1, "1")
-plot_erreurs(errors_values_2_L1,errors_values_2_L2,errorLinf_2, "1")
-=======
 plot_erreurs(errors_values_1_l1,errors_values_1_l2,error_linf_1, "1")
 #plot_erreurs(errors_values_2_l1,errors_values_2_l2,error_linf_2, "1")
->>>>>>> 721e714bc179dd886982ebe4d6be1dbb5a9d8d01
 
-def plot_convergence(error_values, h_values_ext, Order) :
+def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     """
     Plots the convergence of the error with respect to the grid size.
 
@@ -137,6 +132,7 @@ def plot_convergence(error_values, h_values_ext, Order) :
         error_values (list): List of error values.
         h_values_ext (list): List of grid sizes.
         order (int): The order of the convergence (1 or 2).
+        error_name (string): name of the error (L1, L2, Linf)
 
     Returns:
         None
@@ -166,13 +162,13 @@ def plot_convergence(error_values, h_values_ext, Order) :
     plt.scatter(h_values_ext[-1], extrapolated_value, marker='x', color='g', label='Extrapolation')
 
     plt.title('Convergence d\'ordre' + Order +
-              '\n de l\'erreur $L_2$ en fonction de $Δx$',
+              '\n de l\'erreur '+error_name+' en fonction de $Δx$',
           fontsize=14, fontweight='bold', y=1.02)
     # Le paramètre y règle la position verticale du titre
 
-    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (cm)',
+    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (m)',
                fontsize=12, fontweight='bold')  # Remplacer "h" par "Δx"
-    plt.ylabel('Erreur $L_2$ (m/s)', fontsize=12, fontweight='bold')
+    plt.ylabel('Erreur '+error_name+' (mol/m³) ', fontsize=12, fontweight='bold')
 
     plt.gca().spines['bottom'].set_linewidth(2)
     plt.gca().spines['left'].set_linewidth(2)
@@ -180,7 +176,8 @@ def plot_convergence(error_values, h_values_ext, Order) :
     plt.gca().spines['top'].set_linewidth(2)
     plt.tick_params(width=2, which='both', direction='in', top=True, right=True, length=6)
 
-    equation_text = f'$L_2 = {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    #equation_text = f'$L_2 = {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    equation_text = f'$ {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
     equation_text_obj = plt.text(0.05, 0.05, equation_text, fontsize=12,
                                  transform=plt.gca().transAxes, color='k')
 
@@ -191,15 +188,8 @@ def plot_convergence(error_values, h_values_ext, Order) :
     plt.grid(True)
     plt.legend()
     plt.show()
-<<<<<<< HEAD
-    
-plot_convergence(errors_values_1_L2, h_values, "1")
-plot_convergence(errors_values_2_L2, h_values, "2")
 
-
-
-=======
->>>>>>> 721e714bc179dd886982ebe4d6be1dbb5a9d8d01
-
-plot_convergence(errors_values_1_l2, h_values, "1")
+plot_convergence(errors_values_1_l1, h_values, "1", error_name='L1')
+plot_convergence(errors_values_1_l2, h_values, "1", error_name='L2')
+plot_convergence(error_linf_1, h_values, "1", error_name='Linf')
 #plot_convergence(errors_values_2_l2, h_values, "2")

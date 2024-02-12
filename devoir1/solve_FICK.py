@@ -14,11 +14,6 @@
 import numpy as np
 from numpy import linalg as LA
 
-
-# Pylint montre 3 améliorations à faire sur cette ligne, je sais pas trop comment m'y prendre
-#solve_fick.py:19:0: R0913: Too many arguments (6/5) (too-many-arguments)
-#solve_fick.py:19:0: R0914: Too many local variables (29/15) (too-many-locals)
-#solve_fick.py:19:0: R0915: Too many statements (62/50) (too-many-statements)
 def solve(n, dt, order, imax = 100000, tol = 1E-12, debug=False):
     '''
     Solves Fick's second law of diffusion using the finite difference method.

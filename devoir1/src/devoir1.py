@@ -11,7 +11,8 @@
 ## Date: 11/02/2024
 ##################################################
 ## ToDo:
-##     -
+##     - Check 2nd order solution
+##     - Plot convergence
 ##################################################
 '''
 
@@ -120,10 +121,10 @@ def plot_erreurs(errors_values_l1,errors_values_l2,error_linf,Order):
     plt.grid(True)
     plt.show()
 
-plot_erreurs(errors_values_1_l1,errors_values_1_l2,error_linf_1, "1")
-plot_erreurs(errors_values_2_l1,errors_values_2_l2,error_linf_2, "1")
+#plot_erreurs(errors_values_1_l1,errors_values_1_l2,error_linf_1, "1")
+#plot_erreurs(errors_values_2_l1,errors_values_2_l2,error_linf_2, "1")
 
-def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
+def plot_convergence(error_values, h_values_ext, order, error_name = 'L2') :
     """
     Plots the convergence of the error with respect to the grid size.
 
@@ -160,7 +161,7 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 
     plt.scatter(h_values_ext[-1], extrapolated_value, marker='x', color='g', label='Extrapolation')
 
-    plt.title('Convergence d\'ordre' + Order +
+    plt.title('Convergence d\'ordre ' + str(order) +
               '\n de l\'erreur '+error_name+' en fonction de $Δx$',
           fontsize=14, fontweight='bold', y=1.02)
     # Le paramètre y règle la position verticale du titre
@@ -188,7 +189,52 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     plt.legend()
     plt.show()
 
-plot_convergence(errors_values_1_l1, h_values, "1", error_name='L1')
-plot_convergence(errors_values_1_l2, h_values, "1", error_name='L2')
-plot_convergence(error_linf_1, h_values, "1", error_name='Linf')
-plot_convergence(errors_values_2_l2, h_values, "2")
+plot_convergence(errors_values_1_l1, h_values, order=1, error_name = 'L1')
+plot_convergence(errors_values_1_l2, h_values, order=1, error_name = 'L2')
+plot_convergence(error_linf_1, h_values, order=1, error_name = 'Linf')
+
+def plot_convergence_same_graph(h_values, errors_values_1_l1, errors_values_1_l2,  error_linf_1, order):
+    """
+    Plots the convergence of the error with respect to the grid size.
+
+    Args:
+        error_values (list): List of error values.
+        h_values_ext (list): List of grid sizes.
+        order (int): The order of the convergence (1 or 2).
+        error_name (string): name of the error (L1, L2, Linf)
+
+    Returns:
+        None
+    """
+
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(h_values, errors_values_1_l1, marker='o', color='b', label='Erreur L1')
+    plt.scatter(h_values, errors_values_1_l2, marker='o', color='r', label='Erreur L2')
+    plt.scatter(h_values, error_linf_1, marker='o', color='black', label='Erreur Inf')
+
+
+    plt.title('Convergence d\'ordre ' + order+ '\n de l\'erreur  en fonction de $Δx$',
+          fontsize=14, fontweight='bold', y=1.02)
+    # Le paramètre y règle la position verticale du titre
+
+    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (m)',
+               fontsize=12, fontweight='bold')  # Remplacer "h" par "Δx"
+    plt.ylabel('Erreur  (mol/m³) ', fontsize=12, fontweight='bold')
+
+    plt.gca().spines['bottom'].set_linewidth(2)
+    plt.gca().spines['left'].set_linewidth(2)
+    plt.gca().spines['right'].set_linewidth(2)
+    plt.gca().spines['top'].set_linewidth(2)
+    plt.tick_params(width=2, which='both', direction='in', top=True, right=True, length=6)
+
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+plot_convergence_same_graph(h_values, errors_values_1_l1, errors_values_1_l2,  error_linf_1, '1')
+

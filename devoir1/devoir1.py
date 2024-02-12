@@ -8,11 +8,10 @@
 ##     - Pablo ELICES PAZ
 ##     - Lucas BRAHIC
 ##     - Justin BELZILE
-## Date: 10/02/2024
+## Date: 11/02/2024
 ##################################################
 ## ToDo:
-##     - Check 2nd order solution
-##     - Plot convergence
+##     -
 ##################################################
 '''
 

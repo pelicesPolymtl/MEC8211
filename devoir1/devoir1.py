@@ -98,7 +98,7 @@ def plot_erreurs(errors_valuesL1,errors_valuesL2,errorLinf,order):
     plt.show()
 
 plot_erreurs(errors_values_1_L1,errors_values_1_L2,errorLinf_1, "1")
-#plot_erreurs(errors_values_2_L1,errors_values_2_L2,errorLinf_2, "1")
+plot_erreurs(errors_values_2_L1,errors_values_2_L2,errorLinf_2, "1")
 
 
 
@@ -146,7 +146,7 @@ def plot_convergence(error_values, h_values, order) :
     plt.show()
     
 plot_convergence(errors_values_1_L2, h_values, "1")
-#plot_convergence(errors_values_2_L2, h_values, "2")
+plot_convergence(errors_values_2_L2, h_values, "2")
 
 
 

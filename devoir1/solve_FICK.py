@@ -1,122 +1,140 @@
+'''
 ##################################################
-## Solve Fick second law
+## This module solves Fick's second law
 ##################################################
 ## Code to MEC8211
 ##################################################
-## Authors: 
+## Authors:
 ##     - Pablo ELICES PAZ
 ##     - Lucas BRAHIC
-##     - 
-## Date: 06/02/2024
+##     - Justin BELZILE
+## Date: 10/02/2024
 ##################################################
-
+'''
 import numpy as np
-from numpy import linalg as LA 
+from numpy import linalg as LA
 
 
+# Pylint montre 3 améliorations à faire sur cette ligne, je sais pas trop comment m'y prendre
+#solve_fick.py:19:0: R0913: Too many arguments (6/5) (too-many-arguments)
+#solve_fick.py:19:0: R0914: Too many local variables (29/15) (too-many-locals)
+#solve_fick.py:19:0: R0915: Too many statements (62/50) (too-many-statements)
+def solve(n, dt, order, imax = 100000, tol = 1E-12, debug=False):
+    '''
+    Solves Fick's second law of diffusion using the finite difference method.
 
-def solve(N, dt, order, imax = 100000, tol = 1E-12, debug=False):
+    Args:
+        n (int): Number of discretization points.
+        dt (float): Time interval.
+        order (int): Order of the finite difference method (1 or 2).
+        imax (int, optional): Maximum number of iterations. Default is 100000.
+        tol (float, optional): Tolerance for the stopping criterion. Default is 1E-12.
+        debug (bool, optional): Enable debug mode. Default is False.
+
+    Returns:
+        tuple: A tuple containing the simulation results.
+    '''
     # Geometry
-    R0 = 0.
-    Rf = 0.5
+    r0 = 0.
+    rf = 0.5
 
     # Constant variables
-    Deff = 10E-10
-    S = 8E-9
-    Ce = 12.
-
+    d_eff = 10E-10
+    s = 8E-9
+    c_e = 12.
 
     # Position vector
-    r = np.linspace(R0, Rf, N)
-    h = (Rf -R0)/(N-1)
+    r = np.linspace(r0, rf, n)
+    h = (rf -r0)/(n-1)
 
     # Creation of the system matrix
-    #   Bl: diagonal left
-    #   A : diagonal
-    #   Br: diagonal right
-    Bl_vector = np.zeros(N-2)
-    A_vector = np.zeros(N-2)
-    Br_vector = np.zeros(N-2)
+    #   bl: diagonal left
+    #   a : diagonal
+    #   br: diagonal right
+    bl_vector = np.zeros(n-2)
+    a_vector = np.zeros(n-2)
+    br_vector = np.zeros(n-2)
 
-    for i in range(0, N-2):
+    for i in range(0, n-2):
         if order==1:
-            Bl_vector[i] = -1*Deff*dt /(h*h)
-            Br_vector[i] = -1*Deff*dt * (1/(r[i+1]*h) + 1/(h*h))
-            A_vector[i] = 1 + Deff*dt * (1/(r[i+1]*h) + 2/(h*h))
+            bl_vector[i] = -1*d_eff*dt /(h*h)
+            br_vector[i] = -1*d_eff*dt * (1/(r[i+1]*h) + 1/(h*h))
+            a_vector[i] = 1 + d_eff*dt * (1/(r[i+1]*h) + 2/(h*h))
         elif order==2:
-            Bl_vector[i] = -1*Deff*dt * ( (-1/(2*r[i+1]*h)) + 1/(h*h))
-            Br_vector[i] = -1*Deff*dt * ( (1/(2*r[i+1]*h)) + 1/(h*h))
-            A_vector[i] = 1 + Deff*dt * 2/(h*h)
+            bl_vector[i] = -1*d_eff*dt * ( (-1/(2*r[i+1]*h)) + 1/(h*h))
+            br_vector[i] = -1*d_eff*dt * ( (1/(2*r[i+1]*h)) + 1/(h*h))
+            a_vector[i] = 1 + d_eff*dt * 2/(h*h)
 
-    A = np.diag(A_vector)
-    A = np.c_[np.zeros(N-2), A, np.zeros(N-2)]
+    a = np.diag(a_vector)
+    a = np.c_[np.zeros(n-2), a, np.zeros(n-2)]
 
-    Bl = np.diag(Bl_vector)
-    Bl = np.c_[Bl, np.zeros(N-2), np.zeros(N-2)]
+    bl = np.diag(bl_vector)
+    bl = np.c_[bl, np.zeros(n-2), np.zeros(n-2)]
 
-    Br = np.diag(Br_vector,2)
-    Br = np.delete(Br, [N-2, N-1], 0) #rows
+    br = np.diag(br_vector,2)
+    br = np.delete(br, [n-2, n-1], 0) #rows
 
-    matrix = Bl+A+Br
+    matrix = bl+a+br
 
     # Boundary conditions
     # Neuwmann
-    BC_r0_vector = np.zeros(N)
-    if order == 1: BC_r0_vector[0:2] = [1,-1]
-    elif order == 2: BC_r0_vector[0:3] = [-3, 4, -1]
+    bc_r0_vector = np.zeros(n)
+    if order == 1:
+        bc_r0_vector[0:2] = [1,-1]
+    elif order == 2:
+        bc_r0_vector[0:3] = [-3, 4, -1]
     # Diriclet
-    BC_rN_vector = np.zeros(N)
-    BC_rN_vector[-1] = 1
+    bc_rn_vector = np.zeros(n)
+    bc_rn_vector[-1] = 1
 
+    matrix = np.r_[ [bc_r0_vector], matrix, [bc_rn_vector]] # Add rows for bc
+    matrix_inv = LA.inv(matrix)
 
-    matrix = np.r_[ [BC_r0_vector], matrix, [BC_rN_vector]] # Add rows for BC
-    matrixInv = LA.inv(matrix)
-
-    if debug: 
-       print('** system matrix ** ')
-       print('diagonal vectors: ')
-       print(Bl_vector, A_vector,  Br_vector)
-       print('matrix: ')
-       print(matrix)
-
+    if debug:
+        print('** system matrix ** ')
+        print('diagonal vectors: ')
+        print(bl_vector, a_vector,  br_vector)
+        print('matrix: ')
+        print(matrix)
 
     # Analytical solution
-    C_a=1./4.*S/Deff*Rf**2.*(r**2/Rf**2-1.)+Ce
+    c_a=0.25*s/d_eff*rf**2.*(r**2/rf**2-1.)+c_e
 
-
-    # initial condition: 
+    # initial condition:
     # C(t=0)=10
     # We set 10 to make it faster
-    # C = np.zeros(N)+11 
-    C = np.zeros(N)
-    # Dircihlet BC
-    C[N-1] =  Ce 
-
+    # C = np.zeros(n)+11
+    c = np.zeros(n)
+    # Dircihlet bc
+    c[n-1] =  c_e
 
     #********** MAIN LOOP **********
-    C_pre = np.zeros(N)
-    res = 1; i =0
+    c_pre = np.zeros(n)
+    res = 1
+    i =0
     if debug:
-       print('** main loop **')
-       print('max number of iteration : ', imax)
+        print('** main loop **')
+        print('max number of iteration : ', imax)
 
     while i <imax and abs(res) > tol:
-       
-       for j in range(N): C_pre[j] = C[j]
-       
-       C = C-S*dt
 
-       C[0] = 0
-       C[N-1] =  Ce
+        for j in range(n):
+            c_pre[j] = c[j]
 
-       C = np.matmul(matrixInv, C)
-       res = LA.norm(C-C_pre)
-       
-       if (i%1000 == 0) and debug: print(i, res)
+        c = c-s*dt
 
-       i += 1
-    if i == imax: 
+        c[0] = 0
+        c[n-1] =  c_e
+
+        c = np.matmul(matrix_inv, c)
+        res = LA.norm(c-c_pre)
+
+        if (i%1000 == 0) and debug:
+            print(i, res)
+
+        i += 1
+    if i == imax:
         print('    ***********')
         print('    Maximal number of iterations achived')
 
-    return r, C, C_a
+    return r, c, c_a

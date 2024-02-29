@@ -194,3 +194,85 @@ plt.ylabel('Concentration (C)')
 plt.title('Comparaison entre la solution numérique et manufacturée')
 plt.legend()
 plt.show()
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from numpy import linalg as LA
+
+# Your existing functions here (manufactured_solution, source_term, solve_MMS)
+
+def calculate_errors(c_num, c_man,n, dt):
+    """Calculate L1, L2, and Linf errors."""
+    print("n :", n)
+    print("dt :", dt)
+    error_l1 = np.sum(np.abs(c_num - c_man)) / len(c_num)
+    print("L1", error_l1)
+    error_l2 = np.sqrt(np.sum((c_num - c_man)**2) / len(c_num))
+    print("L2", error_l2)
+    error_linf = np.max(np.abs(c_num - c_man))
+    print("Linfini", error_linf)
+    return error_l1, error_l2, error_linf
+
+def plot_convergence(n_cases, dt_cases, order):
+    """Plot convergence for different grid sizes and time steps."""
+    errors_l1, errors_l2, errors_linf = [], [], []
+    h_values, dt_values = [], []
+    
+    # Analyzing spatial convergence
+    for n in n_cases:
+        r, c_num = solve_MMS(n, max(dt_cases), order, 10000, 1E-15, time)
+        c_man = manufactured_solution(r, 1)
+        errors = calculate_errors(c_num, c_man,n,max(dt_cases))
+        errors_l1.append(errors[0])
+        errors_l2.append(errors[1])
+        errors_linf.append(errors[2])
+        h_values.append(1/(n-1))
+    
+    # Plotting spatial convergence
+    plt.figure(figsize=(10, 6))
+    plt.loglog(h_values, errors_l1, label='L1 Error', marker='o')
+    plt.loglog(h_values, errors_l2, label='L2 Error', marker='x')
+    plt.loglog(h_values, errors_linf, label='Linf Error', marker='+')
+    plt.xlabel('Spatial resolution (h)')
+    plt.ylabel('Error')
+    plt.title(f'Spatial Convergence Analysis (Order {order})')
+    plt.legend()
+    plt.grid(True, which="both", ls="--")
+    plt.show()
+    
+    # Resetting error lists for temporal analysis
+    errors_l1, errors_l2, errors_linf = [], [], []
+
+    # Analyzing temporal convergence
+    for dt in dt_cases:
+        r, c_num = solve_MMS(2000, dt, order, 10000, 1E-15, time)
+        c_man = manufactured_solution(r, 1)
+        errors = calculate_errors(c_num, c_man,2000,dt)
+        errors_l1.append(errors[0])
+        errors_l2.append(errors[1])
+        errors_linf.append(errors[2])
+        dt_values.append(dt)
+    
+    # Plotting temporal convergence
+    plt.figure(figsize=(10, 6))
+    plt.loglog(dt_values, errors_l1, label='L1 Error', marker='o')
+    plt.loglog(dt_values, errors_l2, label='L2 Error', marker='x')
+    plt.loglog(dt_values, errors_linf, label='Linf Error', marker='+')
+    plt.xlabel('Time step (dt)')
+    plt.ylabel('Error')
+    plt.title(f'Temporal Convergence Analysis (Order {order})')
+    plt.legend()
+    plt.grid(True, which="both", ls="--")
+    plt.show()
+
+# Define your cases for grid sizes and time steps
+n_cases = [1000, 1500, 2000, 2500]  # Grid sizes
+dt_cases = [1e4, 1e5, 1e6, 1e7]  # Time steps
+order = 2  # Change as necessary
+
+plot_convergence(n_cases, dt_cases, order)
+
+

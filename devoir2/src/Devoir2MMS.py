@@ -1,24 +1,67 @@
+'''
+##################################################
+## MMS 
+##################################################
+## Code to MEC8211
+##################################################
+## Authors:
+##     - Lucas BRAHIC
+##     - Pablo ELICES PAZ
+##     - Justin BELZILE
+## Date: 29/02/2024
+##################################################
+## ToDo:
+##     -
+##################################################
+'''
+
 import numpy as np
 from numpy import linalg as LA
-from math import pi, exp, sin
+from math import pi, exp
 import matplotlib.pyplot as plt
-
 
 
 
 def manufactured_solution(r, t, R=0.5, Ce=12):
     return np.exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi/2) * (r/R))
 
+
+
+
 def source_term(r, t):
         R = 0.5
         Ce = 12
         Deff = 10E-10
+        
+        #Vérification que r ou t ne soient pas égaux à 0
+        #Si oui on remplace la valeur nulle par 1e-25
+        r = np.where(r < 1e-25, 1e-25, r)        
+        t = np.where(t < 1e-25, 1e-25, t)
+        
+        
         return (-pi * Ce * Deff * np.cos(pi * r / (2 * R)) / (2 * R * r) +
                 pi**2 * Ce * Deff * np.sin(pi * r / (2 * R)) / (4 * R**2) -
                 4 * Deff * exp(-t) + R**2 * exp(-t) - r**2 * exp(-t))
 
 
-def solve(n, dt, order, imax, tol, debug=False):
+
+
+def solve_MMS(n, dt, order, imax, tol, time, debug=False):
+    '''
+    Solves Fick's second law of diffusion using the finite difference method with addition of source term
+
+    Args:
+        n (int): Number of discretization points.
+        dt (float): Time interval.
+        order (int): Order of the finite difference method (1 or 2).
+        imax (int, optional): Maximum number of iterations. Default is 100000.
+        tol (float, optional): Tolerance for the stopping criterion. Default is 1E-12.
+        time(int): current time
+        debug (bool, optional): Enable debug mode. Default is False.
+
+    Returns:
+        tuple: A tuple containing the simulation results.
+    '''
     # Geometry
     r0 = 0
     rf = 0.5
@@ -68,7 +111,7 @@ def solve(n, dt, order, imax, tol, debug=False):
         bc_r0_vector[0:2] = [1,-1]
     elif order == 2:
         bc_r0_vector[0:3] = [-3, 4, -1]
-    # Diriclet
+    # Dirichlet
     bc_rn_vector = np.zeros(n)
     bc_rn_vector[-1] = 1
 
@@ -94,13 +137,17 @@ def solve(n, dt, order, imax, tol, debug=False):
     if debug:
         print('** main loop **')
         print('max number of iteration : ', imax)
-    current_time = 1000000 #temps élevé
+        
+    
     while i <imax and abs(res) > tol:
         
-        #Calcul du terme source, on prend r[1:-1] pour éviter la division par 0 pour r = 0 dans le terme source
-   
-        print(i)
-        s_current = source_term(r, current_time)
+        
+        if debug:
+            print(i)
+            
+        #Calcul du terme source
+    
+        s_current = source_term(r, time)
         
         rhs = c.copy()
         for j in range(1, n-2):
@@ -120,18 +167,24 @@ def solve(n, dt, order, imax, tol, debug=False):
 
     return r, c
 
-
+#Time step
 dt = 1E5
+#Tolérance   
 tol = 1E-15
+#imax
 imax = 1E4
-n = 1000 
+#nombre de points de grille
+n = 1000
+#ordre
 order = 2  
-r1,c_num= solve(n, dt, order, imax, tol)
 
-r = np.linspace(0, 0.5)
-t = 1000000  
+#Choix du temps
+time = 1000000
 
-c_man = manufactured_solution(r1, t)
+#Solver
+r1,c_num= solve_MMS(n, dt, order, imax, tol, time)
+c_man = manufactured_solution(r1, time)
+
 
 plt.figure(figsize=(10, 6))
 plt.plot(r1, c_num, label='Solution Numérique', marker='o')

@@ -4,6 +4,8 @@ from math import pi, exp, sin
 import matplotlib.pyplot as plt
 
 
+
+
 def manufactured_solution(r, t, R=0.5, Ce=12):
     return np.exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi/2) * (r/R))
 
@@ -14,6 +16,7 @@ def source_term(r, t):
         return (-pi * Ce * Deff * np.cos(pi * r / (2 * R)) / (2 * R * r) +
                 pi**2 * Ce * Deff * np.sin(pi * r / (2 * R)) / (4 * R**2) -
                 4 * Deff * exp(-t) + R**2 * exp(-t) - r**2 * exp(-t))
+
 
 def solve(n, dt, order, imax, tol, debug=False):
     # Geometry
@@ -97,7 +100,7 @@ def solve(n, dt, order, imax, tol, debug=False):
         #Calcul du terme source, on prend r[1:-1] pour éviter la division par 0 pour r = 0 dans le terme source
    
         print(i)
-        s_current = source_term(r[1:-1], current_time)
+        s_current = source_term(r, current_time)
         
         rhs = c.copy()
         for j in range(1, n-2):

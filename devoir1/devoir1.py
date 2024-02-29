@@ -19,8 +19,8 @@ import time
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
-import solve_FICK as solve_fick
-
+#import solve_FICK as solve_fick
+import untitled0 as solve_fick
 def plot_solutions(n_cases_ext, Order, file_name):
     '''
     Plots the solutions for different cases.
@@ -121,7 +121,7 @@ def plot_erreurs(errors_values_l1,errors_values_l2,error_linf,Order):
     plt.show()
 
 plot_erreurs(errors_values_1_l1,errors_values_1_l2,error_linf_1, "1")
-#plot_erreurs(errors_values_2_l1,errors_values_2_l2,error_linf_2, "1")
+plot_erreurs(errors_values_2_l1,errors_values_2_l2,error_linf_2, "1")
 
 def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     """
@@ -191,4 +191,4 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 plot_convergence(errors_values_1_l1, h_values, "1", error_name='L1')
 plot_convergence(errors_values_1_l2, h_values, "1", error_name='L2')
 plot_convergence(error_linf_1, h_values, "1", error_name='Linf')
-#plot_convergence(errors_values_2_l2, h_values, "2")
+plot_convergence(errors_values_2_l2, h_values, "2")

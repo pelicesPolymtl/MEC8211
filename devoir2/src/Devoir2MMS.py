@@ -19,6 +19,18 @@ import numpy as np
 from numpy import linalg as LA
 from math import pi, exp
 import matplotlib.pyplot as plt
+# from sympy import symbols, diff, exp, sin, pi
+
+# r, t, R, Ce, Deff, k = symbols('r t R Ce Deff k')
+# C = exp(-t) * (r**2 - R**2) + Ce * sin(pi * r / (2 * R))
+
+# dC_dt = diff(C, t)
+
+# dC_dr = diff(C, r)
+# laplacian_C = 1/r * diff(r * dC_dr, r)
+
+# source_term = dC_dt - (Deff * laplacian_C - k * C)
+# dC_dt, laplacian_C, source_term.simplify()
 
 
 
@@ -26,23 +38,20 @@ def manufactured_solution(r, t, R=0.5, Ce=12):
     return np.exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi/2) * (r/R))
 
 
-
-
 def source_term(r, t):
         R = 0.5
         Ce = 12
         Deff = 10E-10
-        
+        k=4e-9
         #Vérification que r ou t ne soient pas égaux à 0
         #Si oui on remplace la valeur nulle par 1e-25
         r = np.where(r < 1e-25, 1e-25, r)        
         t = np.where(t < 1e-25, 1e-25, t)
-        
+        kc = k * (exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi * r) / (2 * R)))
         
         return (-pi * Ce * Deff * np.cos(pi * r / (2 * R)) / (2 * R * r) +
                 pi**2 * Ce * Deff * np.sin(pi * r / (2 * R)) / (4 * R**2) -
-                4 * Deff * exp(-t) + R**2 * exp(-t) - r**2 * exp(-t))
-
+                4 * Deff * exp(-t) + R**2 * exp(-t) - r**2 * exp(-t) +kc)
 
 
 
@@ -70,7 +79,7 @@ def solve_MMS(n, dt, order, imax, tol, time, debug=False):
     d_eff = 10E-10
     # s = 8E-9
     c_e = 12.
-
+    k=4e-9
     # Position vector
     r = np.linspace(r0, rf, n)
     h = (rf -r0)/(n-1)
@@ -144,14 +153,12 @@ def solve_MMS(n, dt, order, imax, tol, time, debug=False):
         
         if debug:
             print(i)
-            
-        #Calcul du terme source
-    
         s_current = source_term(r, time)
         
         rhs = c.copy()
         for j in range(1, n-2):
-            rhs[j] += s_current[j] * dt
+            rhs[j] = rhs[j] - (k*rhs[j])*dt            #ajout des termes sources 
+            rhs[j] += +s_current[j] * dt
         rhs[0] = 0  
         
         c = np.matmul(matrix_inv, rhs)
@@ -172,14 +179,14 @@ dt = 1E5
 #Tolérance   
 tol = 1E-15
 #imax
-imax = 1E4
+imax = 10000
 #nombre de points de grille
-n = 1000
+n = 1500
 #ordre
 order = 2  
 
 #Choix du temps
-time = 1000000
+time = 10000000000000000
 
 #Solver
 r1,c_num= solve_MMS(n, dt, order, imax, tol, time)
@@ -195,7 +202,6 @@ plt.title('Comparaison entre la solution numérique et manufacturée')
 plt.legend()
 plt.show()
 
-
 def calculate_errors(c_num, c_man,n, dt):
     print("n :", n)
     print("dt :", dt)
@@ -207,56 +213,95 @@ def calculate_errors(c_num, c_man,n, dt):
     print("Linfini", error_linf)
     return error_l1, error_l2, error_linf
 
-def plot_convergence(n_cases, dt_cases, order):
+def affiche_erreur(n_cases, order):
     errors_l1, errors_l2, errors_linf = [], [], []
     h_values, dt_values = [], []
-    
     for n in n_cases:
-        r, c_num = solve_MMS(n, max(dt_cases), order, 10000, 1E-15, time)
+        r, c_num = solve_MMS(n, 1e8, order, 10000, 1E-15, time)
         c_man = manufactured_solution(r, 1)
-        errors = calculate_errors(c_num, c_man,n,max(dt_cases))
+        errors = calculate_errors(c_num, c_man,n,1e5)
         errors_l1.append(errors[0])
         errors_l2.append(errors[1])
         errors_linf.append(errors[2])
         h_values.append(1/(n-1))
-    
-    plt.figure(figsize=(10, 6))
-    plt.loglog(h_values, errors_l1, label='L1 Error', marker='o')
-    plt.loglog(h_values, errors_l2, label='L2 Error', marker='x')
-    plt.loglog(h_values, errors_linf, label='Linf Error', marker='+')
-    plt.xlabel('Spatial resolution (h)')
-    plt.ylabel('Error')
-    plt.title(f'Spatial Convergence Analysis (Order {order})')
+    return(errors_l1,errors_l2,errors_linf,h_values)
+
+n_cases = [1000,1500,2000]
+
+El1,El2,Elinf,h=affiche_erreur(n_cases, order=2)
+
+
+def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
+    """
+    Plots the convergence of the error with respect to the grid size.
+
+    Args:
+        error_values (list): List of error values.
+        h_values_ext (list): List of grid sizes.
+        order (int): The order of the convergence (1 or 2).
+        error_name (string): name of the error (L1, L2, Linf)
+
+    Returns:
+        None
+    """
+
+    coefficients = np.polyfit(np.log(h_values_ext[:3]), np.log(error_values[:3]), 1)
+    exponent = coefficients[0]
+
+    #fit_function_log = lambda x: exponent * x + coefficients[1]
+
+    #fit_function = lambda x: np.exp(fit_function_log(np.log(x)))
+
+    def fit_function_log(x):
+        return exponent * x + coefficients[1]
+
+    def fit_function(x):
+        return np.exp(fit_function_log(np.log(x)))
+
+    extrapolated_value = fit_function(h_values_ext[-1])
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(h_values_ext, error_values, marker='o',
+                color='b', label='Données numériques obtenues')
+    plt.plot(h_values_ext, fit_function(h_values_ext), linestyle='--',
+              color='r', label='Régression en loi de puissance')
+
+    plt.scatter(h_values_ext[-1], extrapolated_value, marker='x', color='g', label='Extrapolation')
+
+    plt.title('Convergence d\'ordre' + Order +
+              '\n de l\'erreur '+error_name+' en fonction de $Δx$',
+          fontsize=14, fontweight='bold', y=1.02)
+    # Le paramètre y règle la position verticale du titre
+
+    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (m)',
+                fontsize=12, fontweight='bold')  # Remplacer "h" par "Δx"
+    plt.ylabel('Erreur '+error_name+' (mol/m³) ', fontsize=12, fontweight='bold')
+
+    plt.gca().spines['bottom'].set_linewidth(2)
+    plt.gca().spines['left'].set_linewidth(2)
+    plt.gca().spines['right'].set_linewidth(2)
+    plt.gca().spines['top'].set_linewidth(2)
+    plt.tick_params(width=2, which='both', direction='in', top=True, right=True, length=6)
+
+    #equation_text = f'$L_2 = {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    equation_text = f'$ {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    equation_text_obj = plt.text(0.05, 0.05, equation_text, fontsize=12,
+                                  transform=plt.gca().transAxes, color='k')
+
+    equation_text_obj.set_position((0.5, 0.4))
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.grid(True)
     plt.legend()
-    plt.grid(True, which="both", ls="--")
-    plt.show()
-    
-    errors_l1, errors_l2, errors_linf = [], [], []
-
-    for dt in dt_cases:
-        r, c_num = solve_MMS(2000, dt, order, 10000, 1E-15, time)
-        c_man = manufactured_solution(r, 1)
-        errors = calculate_errors(c_num, c_man,2000,dt)
-        errors_l1.append(errors[0])
-        errors_l2.append(errors[1])
-        errors_linf.append(errors[2])
-        dt_values.append(dt)
-    
-    plt.figure(figsize=(10, 6))
-    plt.loglog(dt_values, errors_l1, label='L1 Error', marker='o')
-    plt.loglog(dt_values, errors_l2, label='L2 Error', marker='x')
-    plt.loglog(dt_values, errors_linf, label='Linf Error', marker='+')
-    plt.xlabel('Time step (dt)')
-    plt.ylabel('Error')
-    plt.title(f'Temporal Convergence Analysis (Order {order})')
-    plt.legend()
-    plt.grid(True, which="both", ls="--")
     plt.show()
 
-n_cases = [1000, 1500, 2000, 2500]
-dt_cases = [1e4, 1e5, 1e6, 1e7]  
-order = 2  
+plot_convergence(El2, h, "2", error_name='L2')
 
-plot_convergence(n_cases, dt_cases, order)
+
+
+
+    
+
 
 

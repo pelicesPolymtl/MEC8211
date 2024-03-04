@@ -19,8 +19,8 @@ import time
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
-#import solve_FICK as solve_fick
-import untitled0 as solve_fick
+import solve_FICK as solve_fick
+# import untitled0 as solve_fick
 def plot_solutions(n_cases_ext, Order, file_name):
     '''
     Plots the solutions for different cases.

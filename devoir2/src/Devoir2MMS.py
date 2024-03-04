@@ -1,85 +1,58 @@
-'''
-##################################################
-## MMS 
-##################################################
-## Code to MEC8211
-##################################################
-## Authors:
-##     - Lucas BRAHIC
-##     - Pablo ELICES PAZ
-##     - Justin BELZILE
-## Date: 29/02/2024
-##################################################
-## ToDo:
-##     -
-##################################################
-'''
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar  4 18:04:32 2024
+
+@author: lucas
+"""
 
 import numpy as np
 from numpy import linalg as LA
-from math import pi, exp
 import matplotlib.pyplot as plt
-# from sympy import symbols, diff, exp, sin, pi
 
-# r, t, R, Ce, Deff, k = symbols('r t R Ce Deff k')
-# C = exp(-t) * (r**2 - R**2) + Ce * sin(pi * r / (2 * R))
-
-# dC_dt = diff(C, t)
-
-# dC_dr = diff(C, r)
-# laplacian_C = 1/r * diff(r * dC_dr, r)
-
-# source_term = dC_dt - (Deff * laplacian_C - k * C)
-# dC_dt, laplacian_C, source_term.simplify()
-
-
-
-def manufactured_solution(r, t, R=0.5, Ce=12):
-    return np.exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi/2) * (r/R))
-
+def manufactured_solution(r, t):
+    Cs = 12.0
+    R = 0.5
+    return (Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
 
 def source_term(r, t):
-        R = 0.5
-        Ce = 12
-        Deff = 10E-10
-        k=4e-9
-        #Vérification que r ou t ne soient pas égaux à 0
-        #Si oui on remplace la valeur nulle par 1e-25
-        r = np.where(r < 1e-25, 1e-25, r)        
-        t = np.where(t < 1e-25, 1e-25, t)
-        kc = k * (exp(-t) * (r**2 - R**2) + Ce * np.sin((np.pi * r) / (2 * R)))
-        
-        return (-pi * Ce * Deff * np.cos(pi * r / (2 * R)) / (2 * R * r) +
-                pi**2 * Ce * Deff * np.sin(pi * r / (2 * R)) / (4 * R**2) -
-                4 * Deff * exp(-t) + R**2 * exp(-t) - r**2 * exp(-t) +kc)
-
+    Cs = 12.0
+    R = 0.5
+    De = 10e-10
+    k = 4e-9
+    kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
+    expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r/(t + 1) - 2*(R - r)/(t + 1)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 + r**2/(t + 1) + 2*r*(-R + r)/(t + 1))/r - r**2*(-R + r)/(t + 1)**2
+    return (expression + kc)
 
 
 def solve_MMS(n, dt, order, imax, tol, time, debug=False):
     '''
     Solves Fick's second law of diffusion using the finite difference method with addition of source term
+    
+    This function is exactly the same as in "devoir 1", but now we add a source term (-kC) and also the source term
+    from MMS (Manufactured Method Solution)
 
     Args:
         n (int): Number of discretization points.
         dt (float): Time interval.
         order (int): Order of the finite difference method (1 or 2).
-        imax (int, optional): Maximum number of iterations. Default is 100000.
-        tol (float, optional): Tolerance for the stopping criterion. Default is 1E-12.
+        imax (int, optional): Maximum number of iterations. 
+        tol (float, optional): Tolerance for the stopping criterion. 
         time(int): current time
         debug (bool, optional): Enable debug mode. Default is False.
 
     Returns:
         tuple: A tuple containing the simulation results.
+    
     '''
     # Geometry
     r0 = 0
     rf = 0.5
 
     # Constant variables
-    d_eff = 10E-10
+    d_eff = 10e-10
     # s = 8E-9
     c_e = 12.
-    k=4e-9
+    k=4e-9 
     # Position vector
     r = np.linspace(r0, rf, n)
     h = (rf -r0)/(n-1)
@@ -126,109 +99,78 @@ def solve_MMS(n, dt, order, imax, tol, time, debug=False):
 
     matrix = np.r_[ [bc_r0_vector], matrix, [bc_rn_vector]] # Add rows for bc
     matrix_inv = LA.inv(matrix)
-
-    if debug:
-        print('** system matrix ** ')
-        print('diagonal vectors: ')
-        print(bl_vector, a_vector,  br_vector)
-        print('matrix: ')
-        print(matrix)
-
-   
+ 
     c = np.zeros(n)
-    # Dircihlet bc
     c[n-1] =  c_e
 
     #********** MAIN LOOP **********
     c_pre = np.zeros(n)
     res = 1
     i =0
-    if debug:
-        print('** main loop **')
-        print('max number of iteration : ', imax)
-        
-    
-    while i <imax and abs(res) > tol:
-        
-        
-        if debug:
-            print(i)
-        s_current = source_term(r, time)
-        
-        rhs = c.copy()
-        for j in range(1, n-2):
-            rhs[j] = rhs[j] - (k*rhs[j])*dt            #ajout des termes sources 
-            rhs[j] += +s_current[j] * dt
-        rhs[0] = 0  
-        
-        c = np.matmul(matrix_inv, rhs)
-        res = LA.norm(c-c_pre)
+    while i < imax and abs(res) > tol:
+        s_current = source_term(r, time)  #Ici nous calculons le terme source pour r et le time spécifié
+        c_pre = c.copy()
 
-        if (i%1000 == 0) and debug:
-            print(i, res)
+        c[1:-1] = c[1:-1] - k*c[1:-1]*dt + s_current[1:-1]*dt
 
-        i += 1
+
+        c = np.linalg.solve(matrix, c)
+
+        res = LA.norm(c - c_pre)
+
+    if (i % 1000 == 0) and debug:
+        print(i, res)
+
+    i += 1
+
     if i == imax:
         print('    ***********')
         print('    Maximal number of iterations achived')
 
     return r, c
 
-#Time step
-dt = 1E5
-#Tolérance   
-tol = 1E-15
-#imax
-imax = 10000
-#nombre de points de grille
-n = 1500
-#ordre
-order = 2  
-
-#Choix du temps
-time = 10000000000000000
+# #Time step
+# dt = 1E5
+# #Tolérance   
+# tol = 1E-15
+# #imax
+# imax = 1e7
+# #nombre de points de grille
+# n = 100
+# #ordre
+# order = 2 
+# #Choix du temps
+# time = 1e10
 
 #Solver
-r1,c_num= solve_MMS(n, dt, order, imax, tol, time)
-c_man = manufactured_solution(r1, time)
-
-
-plt.figure(figsize=(10, 6))
-plt.plot(r1, c_num, label='Solution Numérique', marker='o')
-plt.plot(r1, c_man, label='Solution Manufacturée', linestyle='--')
-plt.xlabel('Position (r)')
-plt.ylabel('Concentration (C)')
-plt.title('Comparaison entre la solution numérique et manufacturée')
-plt.legend()
-plt.show()
-
-def calculate_errors(c_num, c_man,n, dt):
-    print("n :", n)
-    print("dt :", dt)
-    error_l1 = np.sum(np.abs(c_num - c_man)) / len(c_num)
-    print("L1", error_l1)
-    error_l2 = np.sqrt(np.sum((c_num - c_man)**2) / len(c_num))
+h=[]
+El2=[]
+n_cases = [10,20,50,80,100]
+for n in n_cases:
+    dt = 1E5
+    tol = 1e-15
+    imax = 1e7
+    order = 2
+    time = 1e10
+    dx=0.5/n
+    h.append(dx)
+    r1,c_num= solve_MMS(n, dt, order, imax, tol, time)
+    c_man = manufactured_solution(r1, time)
+    error_l2 = np.sqrt(np.sum((c_num - c_man)**2)/len(c_num))
+    El2.append(error_l2)
+    print("n :",n)
     print("L2", error_l2)
-    error_linf = np.max(np.abs(c_num - c_man))
-    print("Linfini", error_linf)
-    return error_l1, error_l2, error_linf
+    plt.figure(figsize=(10, 6))
+    plt.plot(r1, c_num, label='Solution Numérique', marker='o')
+    plt.plot(r1, c_man, label='Solution Manufacturée', linestyle='--')
+    plt.xlabel('Position (r)')
+    plt.ylabel('Concentration (C)')
+    plt.title('Comparaison entre la solution numérique et manufacturée')
+    plt.legend()
+    plt.show()
 
-def affiche_erreur(n_cases, order):
-    errors_l1, errors_l2, errors_linf = [], [], []
-    h_values, dt_values = [], []
-    for n in n_cases:
-        r, c_num = solve_MMS(n, 1e8, order, 10000, 1E-15, time)
-        c_man = manufactured_solution(r, 1)
-        errors = calculate_errors(c_num, c_man,n,1e5)
-        errors_l1.append(errors[0])
-        errors_l2.append(errors[1])
-        errors_linf.append(errors[2])
-        h_values.append(1/(n-1))
-    return(errors_l1,errors_l2,errors_linf,h_values)
 
-n_cases = [1000,1500,2000]
 
-El1,El2,Elinf,h=affiche_erreur(n_cases, order=2)
 
 
 def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
@@ -299,9 +241,92 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 plot_convergence(El2, h, "2", error_name='L2')
 
 
+def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
+    """
+    Plots the convergence of the error with respect to the grid size.
 
+    Args:
+        error_values (list): List of error values.
+        h_values_ext (list): List of grid sizes.
+        order (int): The order of the convergence (1 or 2).
+        error_name (string): name of the error (L1, L2, Linf)
 
+    Returns:
+        None
+    """
+
+    coefficients = np.polyfit(np.log(delta_t[:3]), np.log(error_values[:3]), 1)
+    exponent = coefficients[0]
+
+    #fit_function_log = lambda x: exponent * x + coefficients[1]
+
+    #fit_function = lambda x: np.exp(fit_function_log(np.log(x)))
+
+    def fit_function_log(x):
+        return exponent * x + coefficients[1]
+
+    def fit_function(x):
+        return np.exp(fit_function_log(np.log(x)))
+
+    extrapolated_value = fit_function(delta_t[-1])
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(delta_t, error_values, marker='o',
+                color='b', label='Données numériques obtenues')
+    plt.plot(delta_t, fit_function(delta_t), linestyle='--',
+              color='r', label='Régression en loi de puissance')
+
+    plt.scatter(delta_t[-1], extrapolated_value, marker='x', color='g', label='Extrapolation')
+
+    plt.title('Convergence d\'ordre' + Order +
+              '\n de l\'erreur '+error_name+' en fonction de $Δt$',
+          fontsize=14, fontweight='bold', y=1.02)
+    # Le paramètre y règle la position verticale du titre
+
+    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (m)',
+                fontsize=12, fontweight='bold')  # Remplacer "h" par "Δx"
+    plt.ylabel('Erreur '+error_name+' (mol/m³) ', fontsize=12, fontweight='bold')
+
+    plt.gca().spines['bottom'].set_linewidth(2)
+    plt.gca().spines['left'].set_linewidth(2)
+    plt.gca().spines['right'].set_linewidth(2)
+    plt.gca().spines['top'].set_linewidth(2)
+    plt.tick_params(width=2, which='both', direction='in', top=True, right=True, length=6)
+
+    #equation_text = f'$L_2 = {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    equation_text = f'$ {np.exp(coefficients[1]):.4f} \\times Δx^{{{exponent:.4f}}}$'
+    equation_text_obj = plt.text(0.05, 0.05, equation_text, fontsize=12,
+                                  transform=plt.gca().transAxes, color='k')
+
+    equation_text_obj.set_position((0.5, 0.4))
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
     
+El2=[]
+dt_cases = [1e3,1e4,1e5,1e6,1e7]
+for dt in dt_cases:
+    tol = 1e-15
+    imax = 1e7
+    order = 2
+    time = 1e10
+    n=200
+    r1,c_num= solve_MMS(n, dt, order, imax, tol, time)
+    c_man = manufactured_solution(r1, time)
+    error_l2 = np.sqrt(np.sum((c_num - c_man)**2)/len(c_num))
+    El2.append(error_l2)
+    print("n :",n)
+    print("L2", error_l2)
+    plt.figure(figsize=(10, 6))
+    plt.plot(r1, c_num, label='Solution Numérique', marker='o')
+    plt.plot(r1, c_man, label='Solution Manufacturée', linestyle='--')
+    plt.xlabel('Position (r)')
+    plt.ylabel('Concentration (C)')
+    plt.title('Comparaison entre la solution numérique et manufacturée')
+    plt.legend()
+    plt.show()
 
-
-
+plot_convergence_t(El2,dt_cases,"2", error_name='L2')

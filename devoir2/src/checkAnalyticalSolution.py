@@ -3,7 +3,7 @@ import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
 
 n = 20
-tFinal = 20
+tFinal = 15
 for t in np.linspace(0,tFinal,n+1):
     # Geometry
     r0 = 0

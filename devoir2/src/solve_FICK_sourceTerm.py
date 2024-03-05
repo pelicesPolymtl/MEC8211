@@ -10,20 +10,46 @@ import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
 
+# def manufactured_solution(r, t):
+#     Cs = 12.0
+#     R = 0.5
+#     return (Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
+
+# def source_term(r, t):
+#     Cs = 12.0
+#     R = 0.5
+#     De = 10e-10
+#     k = 4e-9
+#     r = np.maximum(r, 1e-25)
+#     t = np.maximum(t, 1e-25)
+#     kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
+#     expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r/(t + 1) - 2*(R - r)/(t + 1)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 + r**2/(t + 1) + 2*r*(-R + r)/(t + 1))/r - r**2*(-R + r)/(t + 1)**2
+#     return (expression + kc)
+
 def manufactured_solution(r, t):
     Cs = 12.0
     R = 0.5
-    return (Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
-
+    return (Cs*np.sin(np.pi*r**2/(2*R**2)) - r**2*t**0.25*(-R + r))
 def source_term(r, t):
     Cs = 12.0
     R = 0.5
     De = 10e-10
     k = 4e-9
-    kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*(-R + r)/(t + 1))
-    expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r/(t + 1) - 2*(R - r)/(t + 1)) - De*(np.pi*Cs*r*np.cos(np.pi*r/(2*R**2))/R**2 + r/(t + 1) + 2*(-R + r)/(t + 1)) - r**2*(-R + r)/(t + 1)**2
-    return (expression + kc)
+    r = np.maximum(r, 1e-25)
+    t = np.maximum(t, 1e-25)
+    kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) - r**2*t**0.25*(-R + r))
+    expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 - 4*r*t**0.25 + 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 - r**2*t**0.25 - 2*r*t**0.25*(-R + r))/r - 0.25*r**2*(-R + r)/t**0.75
+    return expression +kc 
 
+# def source_term(r, t):
+#     Cs = 12.0
+#     R = 0.5
+#     De = 10e-10
+#     k = 4e-9
+#     # r = np.maximum(r, 1e-25)
+#     # t = np.maximum(t, 1e-25)
+#     kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*t**0.25*(-R + r))
+#     return -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r*t**0.25 - 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 + r**2*t**0.25 + 2*r*t**0.25*(-R + r))/r + 0.25*r**2*(-R + r)/t**0.75 + kc
 
 def solve(n, dt, order, tmax,  MMS = True, debug=False):
     '''
@@ -112,14 +138,15 @@ def solve(n, dt, order, tmax,  MMS = True, debug=False):
 
         c_pre = c.copy()
 
-        if MMS: 
-            s_current = source_term(r, t) #Ici nous calculons le terme source pour r et le time spécifié
-            c = c - k*c*dt + s_current*dt
+        if MMS:
+            s_current = source_term(r, t)
+            c = c - k*c*dt + s_current*dt        #Ici nous calculons le terme source pour r et le time spécifié
         else: c = c - k*c*dt 
 
-        c[0]=0.; c[-1]=12
-
+        c[0]=0.;c[-1]=12 
         c = np.matmul(matrix_inv, c)
+        
+        #c = LA.solve(matrix, c)
 
         res = LA.norm(c - c_pre)
 

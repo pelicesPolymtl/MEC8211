@@ -121,7 +121,7 @@ def solve_MMS(n, dt, order, imax, tol, time, debug=False):
     if (i % 1000 == 0) and debug:
         print(i, res)
 
-    i += 1
+        i += 1
 
     if i == imax:
         print('    ***********')
@@ -307,7 +307,7 @@ def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
     plt.show()
     
 El2=[]
-dt_cases = [1e3,1e4,1e5,1e6,1e7]
+dt_cases = [1e4,1e5,1e6,1e7]
 for dt in dt_cases:
     tol = 1e-15
     imax = 1e7

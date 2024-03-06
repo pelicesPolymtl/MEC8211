@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 # def source_term(r, t):
 #     Cs = 12.0
 #     R = 0.5
-#     De = 10e-10
+#     De = 1e-10
 #     k = 4e-9
 #     r = np.maximum(r, 1e-25)
 #     t = np.maximum(t, 1e-25)
@@ -26,7 +26,9 @@ import matplotlib.pyplot as plt
 #     expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r/(t + 1) - 2*(R - r)/(t + 1)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 + r**2/(t + 1) + 2*r*(-R + r)/(t + 1))/r - r**2*(-R + r)/(t + 1)**2
 #     return (expression + kc)
 
-def manufactured_solution(r, t):
+
+
+def manufactured_solution(r,t):
     Cs = 12.0
     R = 0.5
     return (Cs*np.sin(np.pi*r**2/(2*R**2)) - r**2*t**0.25*(-R + r))
@@ -41,15 +43,10 @@ def source_term(r, t):
     expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 - 4*r*t**0.25 + 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 - r**2*t**0.25 - 2*r*t**0.25*(-R + r))/r - 0.25*r**2*(-R + r)/t**0.75
     return expression +kc 
 
-# def source_term(r, t):
-#     Cs = 12.0
-#     R = 0.5
-#     De = 10e-10
-#     k = 4e-9
-#     # r = np.maximum(r, 1e-25)
-#     # t = np.maximum(t, 1e-25)
-#     kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) + r**2*t**0.25*(-R + r))
-#     return -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 + 4*r*t**0.25 - 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 + r**2*t**0.25 + 2*r*t**0.25*(-R + r))/r + 0.25*r**2*(-R + r)/t**0.75 + kc
+r=np.linspace(0,0.5,100)
+t=1e15
+c_ma = manufactured_solution(r,t)
+plt.plot(r,c_ma)
 
 def solve(n, dt, order, tmax,  MMS = True, debug=False):
     '''
@@ -76,7 +73,7 @@ def solve(n, dt, order, tmax,  MMS = True, debug=False):
     rf = 0.5
 
     # Constant variables
-    d_eff = 10e-10
+    d_eff = 1e-10
     # s = 8E-9
     c_e = 12.
     k=4e-9 

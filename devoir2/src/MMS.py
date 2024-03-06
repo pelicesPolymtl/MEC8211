@@ -179,7 +179,7 @@ def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
           fontsize=14, fontweight='bold', y=1.02)
     # Le paramètre y règle la position verticale du titre
 
-    plt.xlabel('Taille de maille $h_{max}$ ou $Δx$ (m)',
+    plt.xlabel(' $Δt$ (s)',
                 fontsize=12, fontweight='bold')  # Remplacer "h" par "Δx"
     plt.ylabel('Erreur '+error_name+' (mol/m³) ', fontsize=12, fontweight='bold')
 
@@ -203,10 +203,10 @@ def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
     plt.show()
     
 El2=[]
-dt_cases = [1e7,2e7,3e7]   #nombre d'itérations
+dt_cases = [5e5,1e6,5e6,1e7]   #nombre d'itérations
 time = []
 for t in dt_cases:
-    n=320
+    n=160
     tMax = 1e12 #0.1
     dt = t
     Order = 2

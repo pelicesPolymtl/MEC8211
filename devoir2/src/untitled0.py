@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import solve_FICK_sourceTerm as mycode
+from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
 
@@ -16,18 +17,44 @@ plt.xticks(rotation=45)
 plt.tight_layout() 
 plt.show()
 
+df.sort_values(by='R', inplace=True)
+interpolate_function = interp1d(df['R'], df['c'], kind='linear')
+
+new_mesh_1 = np.linspace(df['R'].min(), df['R'].max(), 320)
+
+new_values_1 = interpolate_function(new_mesh_1)
+
+new_mesh = np.linspace(df['R'].min(), df['R'].max(), 160)
+
+new_values = interpolate_function(new_mesh)
+
+plt.figure(figsize=(10, 6))
+plt.plot(df['R'], df['c'], 'o', label='Données originales')  # Points originaux
+plt.plot(new_mesh, new_values, '-', label='Interpolation')  # Ligne interpolée
+plt.title('Interpolation de données sur un maillage plus fin')
+plt.xlabel('R')
+plt.ylabel('c')
+plt.legend()
+plt.show()
+
+dict = {}
+dict["81"]=df['c']
+dict["320"]=new_values_1
+dict["160"]=new_values
+
 
 h=[]
 El2=[]
 n_cases = [81]
-for n in n_cases:
+key = ["81","160","320"]
+for i in range(len(n_cases)):
     tMax = 1e12#0.1
     dt = 1e7
     Order = 2
-    dx=0.5/n
+    dx=0.5/n_cases[i]
     h.append(dx)
-    r,c_num = mycode.solve(n, dt, Order, tMax, MMS = False, debug=False)
-    error_l2 = np.sqrt(np.sum((c_num - df['c'])**2)/len(c_num))
+    r,c_num = mycode.solve(n_cases[i], dt, Order, tMax, MMS = False, debug=False)
+    error_l2 = np.sqrt(np.sum((c_num - )**2)/len(c_num))
     El2.append(error_l2)
     print("n :",n)
     print("L2", error_l2)

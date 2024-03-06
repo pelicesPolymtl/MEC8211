@@ -33,7 +33,7 @@ def manufactured_solution(r, t):
 def source_term(r, t):
     Cs = 12.0
     R = 0.5
-    De = 10e-10
+    De = 1e-10
     k = 4e-9
     r = np.maximum(r, 1e-25)
     t = np.maximum(t, 1e-25)

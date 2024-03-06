@@ -10,8 +10,13 @@
 ##     - Justin BELZILE
 ## Date: 04/03/2024
 ##################################################
-## ToDo:
-##     -
+## Description:
+##    This script is used to debug the solution
+##    It plot one solution for a: 
+##     - tmax: final time
+##     - n: number of point of the mesh
+##     - order: order of the finite differences
+##     - dt: time step
 ##################################################
 '''
 
@@ -21,18 +26,19 @@ import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
 
 # Numerical parameters
-dt = 1E5
 Order = 2
+n=20
+tMax = 1e11
+dt = 1E7
+
+
+tVer = tMax/10
 
 print('runing solver...')
 print(' order=', Order)
 print('')
 
-n=20
 
-
-tMax = 1e8
-tVer = tMax/10
 
 t = 0
 factor_t = 1e7
@@ -45,4 +51,5 @@ while(t<tMax):
     plt.plot(r,c, label='t = '+str(int(t/factor_t)))
 plt.legend()
 plt.show()
+
 

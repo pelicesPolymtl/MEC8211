@@ -98,17 +98,18 @@ h=[]
 El2=[]
 tMax = 1e12
 dt = 1E7
-n_cases = [10, 20,40,80,160,320]
+n_cases = [ 80,160,320, 640, 1280]
 Order = 2
 for i in range(len(n_cases)):
     n = n_cases[i]
     
     r,c_num = mycode.solve(n+1, dt, Order, tMax, MMS = False, debug=False)
     index = np.linspace(0,n,int(n/2**i)+1, dtype=int)
-    if i>1:
+    if i>0:
         error_l2 = np.sqrt(np.sum((c_num[index] - c_pre)**2)/len(c_num[index]))
         El2.append(error_l2)
         h.append(0.5/n)
+        print(n, El2)
     c_pre  = c_num[index]
     print()
 
@@ -121,7 +122,7 @@ h=[]
 El2=[]
 tMax = 1e12
 dt = 1E7
-n_cases = [10, 20,40,80,160,320]
+n_cases = [80,160,320, 640, 1280]
 Order = 1
 for i in range(len(n_cases)):
     n = n_cases[i]

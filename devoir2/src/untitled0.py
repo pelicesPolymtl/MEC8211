@@ -5,7 +5,8 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
 
-df = pd.read_csv('C:/Users/lucas/OneDrive/Documents/GitHub/MEC8211/devoir2/data/Comsol_profil_81_1e5.csv', sep=';')
+#df = pd.read_csv('C:/Users/lucas/OneDrive/Documents/GitHub/MEC8211/devoir2/data/Comsol_profil_81_1e5.csv', sep=';')
+df = pd.read_csv('C:\Users\pc\OneDrive - polymtl.ca\Documents\GitHub\MEC8211\devoir2\data\data_60noeuds.csv', sep = ',')
 print(df)
 
 plt.plot(df['R'], df['c'])
@@ -54,7 +55,7 @@ for i in range(len(n_cases)):
     dx=0.5/n_cases[i]
     h.append(dx)
     r,c_num = mycode.solve(n_cases[i], dt, Order, tMax, MMS = False, debug=False)
-    error_l2 = np.sqrt(np.sum((c_num - )**2)/len(c_num))
+    error_l2 = np.sqrt(np.sum((c_num - 1)**2)/len(c_num))
     El2.append(error_l2)
     print("n :",n)
     print("L2", error_l2)

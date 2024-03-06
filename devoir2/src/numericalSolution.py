@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 # Numerical parameters
 Order = 2
 n=20
-tMax = 1e11
+tMax = 1e9
 dt = 1E7
 
 
@@ -41,15 +41,19 @@ print('')
 
 
 t = 0
-factor_t = 1e7
+factor_t = 1
 r,c = mycode.solve(n, dt, Order, 0, MMS = False, debug=False)
 plt.plot(r,c, label='t = '+str(int(t/factor_t)))
 while(t<tMax):
     t += tVer
     print('time t=', t)
     r,c = mycode.solve(n, dt, Order, t, MMS = False, debug=False)
-    plt.plot(r,c, label='t = '+str(int(t/factor_t)))
+    plt.plot(r,c, label='t = '+"{:.1e}".format(t))
+plt.title('Unsteady solution. N='+str(n)+'; dt='+"{:.1e}".format(dt) ,
+          fontsize=14, fontweight='bold', y=1.02)
+plt.xlabel('Position (r)')
+plt.ylabel('Concentration (C)')
 plt.legend()
-plt.show()
+plt.savefig('unsteady.png')
 
 

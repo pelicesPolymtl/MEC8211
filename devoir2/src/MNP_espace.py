@@ -23,7 +23,7 @@ R=0.5
 dt=1e7
 tMax=1e12
 Order=2
-r,u_MNP_analytique =  mycode.solve(n, dt, Order, tMax,MMS=False,MNP=False, debug=False)
+r,u_MNP_analytique =  mycode.solve(n, dt, Order, tMax,MMS=False, debug=False)
 spline = CubicSpline(r, u_MNP_analytique)
 
 def terme_source_MNP(r,spline):
@@ -35,6 +35,10 @@ def terme_source_MNP(r,spline):
     r = np.maximum(r, 1e-25)
     s = (-Deff/r)*grad_r-Deff*grad_r_2+k*C
     return (s)
+
+
+#Cette fonction solve est exactement la même que dans solve_Fick_sourTerm mais pour des soucis de simplicité
+#Nous crééons une nouvelle fonction solve_MNP, la résolution est la même
 
 def solve_MNP(n, dt, order, tmax, debug=False):
     '''
@@ -123,13 +127,7 @@ def solve_MNP(n, dt, order, tmax, debug=False):
 
         c_pre = c.copy()
 
-        # if MMS:
-        #     s_current = source_term(r, t)
-        #     c = c - k*c*dt + s_current*dt
-        # if MNP:
-        #     s_MNP = mycode_1.terme_source_MNP(r)
-        #     c = c - k*c*dt + s_MNP*dt                                                #Ici nous calculons le terme source pour r et le time spécifié
-        # else: c = c - k*c*dt 
+    
         s_MNP = terme_source_MNP(r,spline)
         c = c - k*c*dt + s_MNP*dt
 
@@ -149,31 +147,29 @@ def solve_MNP(n, dt, order, tmax, debug=False):
     return r, c
 
 
-
-
-
-n=40
-El2=[]
-r,c_num = solve_MNP(n, dt, Order, tMax, debug=False)
-u_analytique = spline(r)
-error_l2 = np.sqrt(np.sum((c_num - u_analytique)**2)/len(c_num))
-El2.append(error_l2)
-print("n :",n)
-print("L2", error_l2)
-plt.figure(figsize=(10, 6))
-plt.plot(r, c_num, label='Solution Numérique', marker='o')
-plt.plot(r, u_analytique, label='Solution Manufacturée', linestyle='--')
-plt.xlabel('Position (r)')
-plt.ylabel('Concentration (C)')
-plt.title('Comparaison entre la solution numérique et manufacturée')
-plt.legend()
-plt.show()
-
-El2 = [0.005223860039389964,0.0013240557274978406,0.000333047087775447]
 h=[]
-n_cases = [40,80,160]
+n_cases = [20,40,80,160]
+El2 = []
+
 for n in (n_cases):
     h.append(0.5/n)
+    r,c_num = solve_MNP(n, dt, Order, tMax, debug=False)
+    u_analytique = spline(r)
+    error_l2 = np.sqrt(np.sum((c_num - u_analytique)**2)/len(c_num))
+    El2.append(error_l2)
+    print("n :",n)
+    print("L2", error_l2)
+    plt.figure(figsize=(10, 6))
+    plt.plot(r, c_num, label='Solution Numérique', marker='o')
+    plt.plot(r, u_analytique, label='Solution Analytique', linestyle='--')
+    plt.xlabel('Position (r)')
+    plt.ylabel('Concentration (C)')
+    plt.title('Comparaison entre la solution numérique et Analytique MNP')
+    plt.legend()
+    plt.show()
+
+
+
 
 def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     """

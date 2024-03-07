@@ -20,8 +20,24 @@ import numpy as np
 import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
 
-# Numerical parameters
 
+# Tracé de la solution manufacturée
+
+plt.figure(figsize=(10, 6)) 
+tMax = 1e12
+r_man = np.linspace(0,0.5,320)
+c_man_a = mycode.manufactured_solution(r_man, tMax)
+
+plt.plot(r_man, c_man_a, label='Solution manufacturée', color='royalblue', linewidth=2, linestyle='--') 
+
+plt.title('Tracé de la solution manufacturée') 
+plt.xlabel('Rayon (r)') 
+plt.ylabel('Concentration (c)') 
+plt.legend()
+plt.grid(True) 
+plt.tight_layout() 
+
+plt.show()
 
 #Etude de la convergence en espace 
 
@@ -124,18 +140,6 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 plot_convergence(El2, h, "2", error_name='L2')
 
 
-print('time t=', tMax)
-r,c_num = mycode.solve(n, dt, Order, tMax, MMS = True, debug=False)
-c_man = mycode.manufactured_solution(r, tMax)
-error_l2 = np.sqrt(np.sum((c_num - c_man)**2)/len(c_num))
-print("error_L2 :", error_l2)
-plt.plot(r, c_num, label='numeric')
-plt.plot(r, c_man, label='analytical')
-plt.legend()
-plt.show()
-
-
-
 #Etude de la connvergence en temps  
 
 
@@ -201,13 +205,13 @@ def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
     plt.grid(True)
     plt.legend()
     plt.show()
-    
+
 El2=[]
-dt_cases = [5e5,1e6,5e6,1e7]   #nombre d'itérations
+dt_cases = [5e8,8e8,1e9]   
 time = []
 for t in dt_cases:
-    n=160
-    tMax = 1e12 #0.1
+    n=320
+    tMax = 1e12 
     dt = t
     Order = 2
     time.append(dt)

@@ -1,6 +1,6 @@
 '''
 ##################################################
-## Run simulations (using olve_FICK_sourceTerm.py)
+## Run simulations (using solve_FICK_sourceTerm.py)
 ##################################################
 ## Code to MEC8211
 ##################################################
@@ -8,38 +8,37 @@
 ##     - Pablo ELICES PAZ
 ##     - Lucas BRAHIC
 ##     - Justin BELZILE
-## Date: 04/03/2024
+## Date: 07/03/2024
 ##################################################
 ## ToDo:
 ##     -
 ##################################################
 '''
 
-
 import numpy as np
-import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
-
+import solve_FICK_sourceTerm as mycode
 
 # Tracé de la solution manufacturée
 
-plt.figure(figsize=(10, 6)) 
+plt.figure(figsize=(10, 6))
 tMax = 1e12
 r_man = np.linspace(0,0.5,320)
 c_man_a = mycode.manufactured_solution(r_man, tMax)
 
-plt.plot(r_man, c_man_a, label='Solution manufacturée', color='royalblue', linewidth=2, linestyle='--') 
+plt.plot(r_man, c_man_a, label='Solution manufacturée', color='royalblue',
+          linewidth=2, linestyle='--')
 
-plt.title('Tracé de la solution manufacturée') 
-plt.xlabel('Rayon (r)') 
-plt.ylabel('Concentration (c)') 
+plt.title('Tracé de la solution manufacturée')
+plt.xlabel('Rayon (r)')
+plt.ylabel('Concentration (c)')
 plt.legend()
-plt.grid(True) 
-plt.tight_layout() 
+plt.grid(True)
+plt.tight_layout()
 
 plt.show()
 
-#Etude de la convergence en espace 
+#Etude de la convergence en espace
 
 Order = 2
 
@@ -89,10 +88,6 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     coefficients = np.polyfit(np.log(h_values_ext[:3]), np.log(error_values[:3]), 1)
     exponent = coefficients[0]
 
-    #fit_function_log = lambda x: exponent * x + coefficients[1]
-
-    #fit_function = lambda x: np.exp(fit_function_log(np.log(x)))
-
     def fit_function_log(x):
         return exponent * x + coefficients[1]
 
@@ -140,7 +135,7 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 plot_convergence(El2, h, "2", error_name='L2')
 
 
-#Etude de la connvergence en temps  
+#Etude de la connvergence en temps
 
 
 
@@ -206,12 +201,12 @@ def plot_convergence_t(error_values, delta_t, Order, error_name = 'L2') :
     plt.legend()
     plt.show()
 
-El2=[]
-dt_cases = [5e8,8e8,1e9]   
+El2 = []
+dt_cases = [5e8,8e8,1e9]
 time = []
 for t in dt_cases:
     n=320
-    tMax = 1e12 
+    tMax = 1e12
     dt = t
     Order = 2
     time.append(dt)
@@ -231,4 +226,3 @@ for t in dt_cases:
     plt.show()
 
 plot_convergence_t(El2,time,"2", error_name='L2')
-

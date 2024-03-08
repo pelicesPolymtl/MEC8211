@@ -8,17 +8,16 @@
 ##     - Pablo ELICES PAZ
 ##     - Lucas BRAHIC
 ##     - Justin BELZILE
-## Date: 04/03/2024
+## Date: 07/03/2024
 ##################################################
 ## ToDo:
 ##     -
 ##################################################
 '''
 
-
 import numpy as np
-import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
+import solve_FICK_sourceTerm as mycode
 
 def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     """
@@ -34,19 +33,18 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
         None
     """
 
+    # Fit a power law curve to the error data
     coefficients = np.polyfit(np.log(h_values_ext[:3]), np.log(error_values[:3]), 1)
     exponent = coefficients[0]
 
-    #fit_function_log = lambda x: exponent * x + coefficients[1]
-
-    #fit_function = lambda x: np.exp(fit_function_log(np.log(x)))
-
+    # Define functions for the power law curve and its logarithm
     def fit_function_log(x):
         return exponent * x + coefficients[1]
 
     def fit_function(x):
         return np.exp(fit_function_log(np.log(x)))
 
+     # Extrapolate the error for the maximum grid size
     extrapolated_value = fit_function(h_values_ext[-1])
 
     plt.figure(figsize=(8, 6))
@@ -83,11 +81,8 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     plt.yscale('log')
     plt.grid(True)
     plt.legend()
-    
 
-
-#Etude de la convergence en espace 
-
+# Etude de la convergence en espace
 Order = 2
 
 print('runing solver...')
@@ -98,11 +93,11 @@ h=[]
 El2=[]
 tMax = 1e12
 dt = 1E7
-n_cases = [ 80,160,320, 640, 1280]
+n_cases = [80, 160, 320, 640, 1280]
 Order = 2
 for i in range(len(n_cases)):
     n = n_cases[i]
-    
+
     r,c_num = mycode.solve(n+1, dt, Order, tMax, MMS = False, debug=False)
     index = np.linspace(0,n,int(n/2**i)+1, dtype=int)
     if i>0:
@@ -124,9 +119,10 @@ tMax = 1e12
 dt = 1E7
 n_cases = [80,160,320, 640, 1280]
 Order = 1
+
 for i in range(len(n_cases)):
     n = n_cases[i]
-    
+
     r,c_num = mycode.solve(n+1, dt, Order, tMax, MMS = False, debug=False)
     index = np.linspace(0,n,int(n/2**i)+1, dtype=int)
     if i>1:
@@ -140,4 +136,3 @@ print(h)
 print(El2)
 plot_convergence(El2, h, "1", error_name='L2')
 plt.savefig("../results/convergence_o1_numerique.png")
-

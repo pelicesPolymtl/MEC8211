@@ -7,11 +7,11 @@ Created on Wed Mar  6 08:43:57 2024
 
 import numpy as np
 from numpy import linalg as LA
-import solve_FICK_sourceTerm as mycode
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
+import solve_FICK_sourceTerm as mycode
 
-
+# Parametres
 R=0.5
 n=160
 dt=1e7
@@ -23,10 +23,21 @@ R=0.5
 dt=1e7
 tMax=1e12
 Order=2
+
 r,u_MNP_analytique =  mycode.solve(n, dt, Order, tMax,MMS=False, debug=False)
 spline = CubicSpline(r, u_MNP_analytique)
 
 def terme_source_MNP(r,spline):
+    '''
+    Calcule le terme source du problème MNP.
+
+    Args:
+        r (array): Vecteur des positions.
+        spline (scipy.interpolate.CubicSpline): Interpolation cubique de la solution MNP.
+
+    Returns:
+        array: Terme source du problème MNP.
+    '''
     C = spline(r)
     grad_r = np.gradient(C, r)
     grad_r_2 = np.gradient(grad_r, r)
@@ -34,18 +45,19 @@ def terme_source_MNP(r,spline):
     k = 4e-9
     r = np.maximum(r, 1e-25)
     s = (-Deff/r)*grad_r-Deff*grad_r_2+k*C
-    return (s)
+    return(s)
 
-
-#Cette fonction solve est exactement la même que dans solve_Fick_sourTerm mais pour des soucis de simplicité
-#Nous crééons une nouvelle fonction solve_MNP, la résolution est la même
+# Cette fonction solve est exactement la même que dans solve_Fick_sourTerm
+# mais pour des soucis de simplicité nous crééons une nouvelle fonction
+# solve_MNP, la résolution est la même
 
 def solve_MNP(n, dt, order, tmax, debug=False):
     '''
-    Solves Fick's second law of diffusion using the finite difference method with addition of source term
+    Solves Fick's second law of diffusion using the finite difference method with 
+    addition of source term
     
-    This function is exactly the same as in "devoir 1", but now we add a source term (-kC) and also the source term
-    from MMS (Manufactured Method Solution)
+    This function is exactly the same as in "devoir 1", but now we add a source term (-kC) 
+    and also the source term from MMS (Manufactured Method Solution)
 
     Args:
         n (int): Number of discretization points.
@@ -58,7 +70,6 @@ def solve_MNP(n, dt, order, tmax, debug=False):
 
     Returns:
         tuple: A tuple containing the simulation results.
-    
     '''
     # Geometry
     r0 = 0
@@ -68,7 +79,7 @@ def solve_MNP(n, dt, order, tmax, debug=False):
     d_eff = 1e-10
     # s = 8E-9
     c_e = 12.
-    k=4e-9 
+    k = 4e-9
     # Position vector
     r = np.linspace(r0, rf, n)
     h = (rf -r0)/(n-1)
@@ -115,8 +126,7 @@ def solve_MNP(n, dt, order, tmax, debug=False):
 
     matrix = np.r_[ [bc_r0_vector], matrix, [bc_rn_vector]] # Add rows for bc
     matrix_inv = LA.inv(matrix)
-  
- 
+
     c = np.zeros(n)
     c[n-1] =  c_e
 
@@ -127,25 +137,23 @@ def solve_MNP(n, dt, order, tmax, debug=False):
 
         c_pre = c.copy()
 
-    
         s_MNP = terme_source_MNP(r,spline)
         c = c - k*c*dt + s_MNP*dt
 
-        c[0]=0.;c[-1]=12 
+        c[0]=0.;c[-1]=12
         c = np.matmul(matrix_inv, c)
-        
+
         #c = LA.solve(matrix, c)
 
         res = LA.norm(c - c_pre)
 
         if i==30:
             print(c[0])
-        
+
         i += 1; t += dt
 
     print('number of iteration: ',i)
     return r, c
-
 
 h=[]
 n_cases = [20,40,80,160]
@@ -168,9 +176,6 @@ for n in (n_cases):
     plt.legend()
     plt.show()
 
-
-
-
 def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
     """
     Plots the convergence of the error with respect to the grid size.
@@ -187,10 +192,6 @@ def plot_convergence(error_values, h_values_ext, Order, error_name = 'L2') :
 
     coefficients = np.polyfit(np.log(h_values_ext[:3]), np.log(error_values[:3]), 1)
     exponent = coefficients[0]
-
-    #fit_function_log = lambda x: exponent * x + coefficients[1]
-
-    #fit_function = lambda x: np.exp(fit_function_log(np.log(x)))
 
     def fit_function_log(x):
         return exponent * x + coefficients[1]

@@ -14,6 +14,7 @@ def manufactured_solution(r,t):
     Cs = 12.0
     R = 0.5
     return (Cs*np.sin(np.pi*r**2/(2*R**2)) - r**2*t**0.25*(-R + r))
+
 def source_term(r, t):
     Cs = 12.0
     R = 0.5
@@ -22,15 +23,24 @@ def source_term(r, t):
     r = np.maximum(r, 1e-25)
     t = np.maximum(t, 1e-25)
     kc = k*(Cs*np.sin(np.pi*r**2/(2*R**2)) - r**2*t**0.25*(-R + r))
-    expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 - 4*r*t**0.25 + 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 - r**2*t**0.25 - 2*r*t**0.25*(-R + r))/r - 0.25*r**2*(-R + r)/t**0.75
-    return expression + kc 
+
+    expression = (
+    -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 - 4*r*t**0.25 + 2*t**0.25*(R - r))
+    - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 - r**2*t**0.25 - 2*r*t**0.25*(-R + r))/r
+    - 0.25*r**2*(-R + r)/t**0.75
+    )
+    #expression = -De*(np.pi*Cs*np.cos(np.pi*r**2/(2*R**2))/R**2 - np.pi**2*Cs*r**2*np.sin(np.pi*r**2/(2*R**2))/R**4 -
+    # 4*r*t**0.25 + 2*t**0.25*(R - r)) - De*(np.pi*Cs*r*np.cos(np.pi*r**2/(2*R**2))/R**2 -
+    # r**2*t**0.25 - 2*r*t**0.25*(-R + r))/r - 0.25*r**2*(-R + r)/t**0.75
+    return expression + kc
 
 def solve(n, dt, order, tmax,  MMS = True, debug=False):
     '''
-    Solves Fick's second law of diffusion using the finite difference method with addition of source term
+    Solves Fick's second law of diffusion using the finite difference method 
+    with addition of source term
     
-    This function is exactly the same as in "devoir 1", but now we add a source term (-kC) and also the source term
-    from MMS (Manufactured Method Solution)
+    This function is exactly the same as in "devoir 1", but now we add a source 
+    term (-kC) and also the source term from MMS (Manufactured Method Solution)
 
     Args:
         n (int): Number of discretization points.
@@ -53,7 +63,8 @@ def solve(n, dt, order, tmax,  MMS = True, debug=False):
     d_eff = 1e-10
     # s = 8E-9
     c_e = 12.
-    k=4e-9 
+    k = 4e-9
+
     # Position vector
     r = np.linspace(r0, rf, n)
     h = (rf -r0)/(n-1)
@@ -100,33 +111,29 @@ def solve(n, dt, order, tmax,  MMS = True, debug=False):
 
     matrix = np.r_[ [bc_r0_vector], matrix, [bc_rn_vector]] # Add rows for bc
     matrix_inv = LA.inv(matrix)
-  
- 
+
     c = np.zeros(n)
-    c[n-1] =  c_e
+    c[n-1] = c_e
 
     #********** MAIN LOOP **********
     c_pre = np.zeros(n)
     i =0; t=0
     while t < tmax:
-
         c_pre = c.copy()
 
         if MMS:
             s_current = source_term(r, t)
-            c = c - k*c*dt + s_current*dt        #Ici nous calculons le terme source pour r et le time spécifié
+            c = c - k*c*dt + s_current*dt #Ici nous calculons le terme source pour r et le time spécifié
         else: c = c - k*c*dt 
 
-        c[0]=0.;c[-1]=12 
+        c[0]=0.;c[-1]=12
         c = np.matmul(matrix_inv, c)
-        
         #c = LA.solve(matrix, c)
-
         res = LA.norm(c - c_pre)
 
         if i==30:
             print(c[0])
-        
+
         i += 1; t += dt
 
     print('number of iteration: ',i)

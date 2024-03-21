@@ -1,3 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% launch_simulationLBM.m
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code pour MEC8211
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Auteurs :
+%     - M. Valid
+%     - Justin BELZILE
+%     -
+%     -
+% Date : 20/03/2024
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MATLAB script to launch a fiber structure generation and the corresponding LBM simulation
 %
 %INPUT VARIABLES:
@@ -13,7 +25,10 @@
 % PORO: estimated porosity of the fiber structure to be generated
 % 
 % NX: domain lateral size in grid cell
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 clc; clear all; close all;
+
 % Same seed as team #
 seed=7;
 
@@ -36,23 +51,20 @@ dx = 2e-6*100./NX;
 
 filename = {'fiber_mat_50.tiff','fiber_mat_100.tiff','fiber_mat_200.tiff','fiber_mat_400.tiff'} ;
 
-
-%%% Lognormal
-% % Créer un objet de distribution lognormale
-% pd = makedist('Lognormal', 'mu', 0, 'sigma', 1);
-% 
-% % Générer un échantillon de données
-% sample_data = random(pd, 1000, 1); % Générer 1000 échantillons
-% 
-% % Calculer les paramètres à partir de l'échantillon
-% sample_mean = mean(sample_data);
-% sample_std_dev = std(sample_data);
-
-
+%% Lognormal
+%% Create a lognormal distribution object
+%pd = makedist('Lognormal', 'mu', 0, 'sigma', 1);
+%
+%% Generate a data sample
+%sample_data = random(pd, 1000, 1); % Generate 1000 samples
+%
+%% Calculate parameters from the sample
+%sample_mean = mean(sample_data);
+%sample_std_dev = std(sample_data);
 
 % Loop for each dx and NX
 for i=1:4
-    fprintf("i = : %d",i);
+    %fprintf("i = : %d",i);
     % generation of the fiber structure
     [d_equivalent]=Generate_sample(seed,filename{i},mean_fiber_d,std_d,poro,NX(i),dx(i));
 

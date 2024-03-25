@@ -1,5 +1,9 @@
 # Calcul des erreurs
-# Derniere modification : 03/24/
+# Derniere modification : 03/24/2024
+# Auteurs : - Pablo ELICES PAZ
+#           - Lucas BRAHIC
+#           - Justin BELZILE
+
 # u_num
 u_num = 0.1177
 

@@ -1,4 +1,3 @@
-
 %% Create a 2D fiber structure and export it in tiff format to be used in the LBM code
 function [d_equivalent]= Generate_sample(seed,filename,mean_d,std_d,poro,nx,dx)
 %
@@ -103,7 +102,7 @@ for i = 1:nx
     end
 end
 
-number_of_fibres=fiber_count
+number_of_fibres=fiber_count;
 
 imwrite(logical(poremat),filename,'tiff');
 
@@ -130,8 +129,8 @@ if (abs(poro_eff-poro)>abs(poro_eff_old-poro))
     poro_eff=poro_eff_old;
 end
 
-dist_d=dist(1:nb_fiber);
+dist_d=sort(dist(1:nb_fiber),'descend');
 
-d_equivalent=(sum(dist_d.^2)/sum(dist_d))
+d_equivalent=(sum(dist_d.^2)/sum(dist_d));
 
 end

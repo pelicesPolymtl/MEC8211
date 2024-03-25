@@ -8,8 +8,8 @@
 u_num = 0.1177
 
 # u_input
-u_input_gauche = 7.76 ** 0.5
-u_input_droite = 11.21 ** 0.5
+u_input_gauche = 7.76
+u_input_droite = 11.21
 
 # u_D
 sr = 14.7
@@ -24,7 +24,7 @@ print(f"L'erreur u_val a droite est de {u_val_droite:.2f} micrometres^2")
 
 
 # erreur de simulation E
-S = 25.1
+S = 25.2
 D = 80.6
 E = S - D
 print(f"L'erreur de simulation E est de {E:.2f} micrometres^2")

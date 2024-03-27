@@ -1,0 +1,7 @@
+# Listing of Parameters
+# ---------------------
+# Problem type <couette | poiseuille |flow around cylinder>
+set problem type       = couette
+
+# Viscosity
+set viscosity          = 0.1

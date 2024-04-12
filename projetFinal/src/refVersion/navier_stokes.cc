@@ -182,6 +182,9 @@ private:
   void
   output_results(unsigned int iter) const;
 
+  void
+  compute_forces();
+
   Triangulation<dim> triangulation;
 
   FESystem<dim>             fe;
@@ -199,6 +202,8 @@ private:
   double      viscosity;
   std::string test_case;
 };
+
+
 
 template <int dim>
 SteadyStateNavierStokes<dim>::SteadyStateNavierStokes(
@@ -231,7 +236,7 @@ SteadyStateNavierStokes<dim>::setup_triangulation()
     {
       // TODO: create the triangulation for the couette case.
       // Remember to refine the triangulation globally.
-      int number_of_initial_refinement = 4;
+      int number_of_initial_refinement = 5;
       Point<dim> p1(0,0);
       Point<dim> p2(8,4);
       GridGenerator::hyper_rectangle(triangulation, p1, p2, true );
@@ -607,6 +612,72 @@ SteadyStateNavierStokes<dim>::output_results(unsigned int iter) const
   data_out.write_vtu(output);
 }
 
+
+template <int dim>
+void
+SteadyStateNavierStokes<dim>::compute_forces()  
+{
+
+  QGauss<dim - 1> quadrature_formula(fe.degree + 1);
+
+  FEFaceValues<dim> fe_face_values(fe, quadrature_formula,
+    update_values | update_quadrature_points | update_gradients |
+    update_normal_vectors | update_JxW_values);
+
+  const unsigned int n_q_points = fe_face_values.n_quadrature_points;
+
+  std::vector<double> face_pressures(n_q_points);
+  std::vector<Tensor<2, dim>> face_velocity_gradients(n_q_points);
+
+  Tensor<1, dim> total_force;
+  double total_area;
+
+  const FEValuesExtractors::Vector velocities(0);
+  const FEValuesExtractors::Scalar pressure(dim);
+
+
+  for (const auto& cell : dof_handler.active_cell_iterators()) 
+  {
+    if (cell->is_locally_owned()) 
+    {
+      for (unsigned int f = 0; f < GeometryInfo<dim>::faces_per_cell; ++f) {
+        if (cell->face(f)->at_boundary()) 
+        {
+          unsigned int boundary_id = cell->face(f)->boundary_id();
+          if (boundary_id == 2) 
+          {
+            fe_face_values.reinit(cell, f);
+
+            fe_face_values[velocities].get_function_gradients(solution, face_velocity_gradients);
+            fe_face_values[pressure].get_function_values(solution, face_pressures);
+
+            for (unsigned int q = 0; q < n_q_points; ++q)
+            {
+              total_force += (
+                // pressure force
+                face_pressures[q] * fe_face_values.normal_vector(q)
+                // viscous force
+                - viscosity * (face_velocity_gradients[q] + transpose(face_velocity_gradients[q])) * fe_face_values.normal_vector(q)
+                ) * fe_face_values.JxW(q);
+              
+              total_area += fe_face_values.JxW(q);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  std::cout << "    Force = (" << total_force[0] << ", " << total_force[1] << ")" << std::endl;
+
+  double drag_force = total_force[0];
+
+  double drag_coeff = drag_force / (0.5 * total_area);
+
+  std::cout << "    Drag coefficient = " << drag_coeff << std::endl;
+
+}
+
 template <int dim>
 void
 SteadyStateNavierStokes<dim>::run()
@@ -670,8 +741,9 @@ SteadyStateNavierStokes<dim>::run()
         break;
       }
     }
-
+  compute_forces();
 }
+
 
 
 int

@@ -1,4 +1,6 @@
+import numpy as np
 import matplotlib.pyplot as plt
+
 
 # Calcul des erreurs
 # Derniere modification : 03/31/2024
@@ -13,20 +15,28 @@ u_num = 0.00024
 u_input_left = 0.02719
 u_input_right = 0.02759
 
-# u_D
-u_d = 0.02
-
-u_val_left = (u_num ** 2 + u_input_left ** 2 + u_d ** 2) ** 0.5
-u_val_right = (u_num ** 2 + u_input_right ** 2 + u_d ** 2) ** 0.5
-
-print(f"L'erreur u_val_left est de {u_val_left:.5f}")
-print(f"L'erreur u_val_right est de {u_val_right:.5f}")
-
 # erreur de simulation E
 S = 1.85
 D = 1.25
 E = S - D
 print(f"L'erreur de simulation E est de {E:.2f}")
+
+# u_D
+sr = D * np.array([0.01, 0.05, 0.1, 0.2])
+i_print = 2 # Index qui sera mis dans les print
+
+
+br = 0.01 * 2 ** 0.5 
+u_d = (sr ** 2 + br ** 2) ** 0.5
+print("u_D = ", u_d)
+
+u_val_left = (u_num ** 2 + u_input_left ** 2 + u_d ** 2) ** 0.5
+u_val_right = (u_num ** 2 + u_input_right ** 2 + u_d ** 2) ** 0.5
+
+print(f"L'erreur u_val_left est de {u_val_left[i_print]:.5f}")
+print(f"L'erreur u_val_right est de {u_val_right[i_print]:.5f}")
+
+
 
 # constante k avec 1-alpha = 0,954
 k = 2
@@ -39,14 +49,14 @@ delta_mod_sup = E + k * u_val_right
 delta_mod_milieu = (delta_mod_inf + delta_mod_sup) * 0.5
 delta_mod_erreur = (delta_mod_inf - delta_mod_sup) * 0.5
 
-print(f"𝛿_𝑚𝑜𝑑𝑒𝑙 est dans l'intervale : [{delta_mod_inf:.4f} ; {delta_mod_sup:.4f}]")
-print(f"Autrement dit, 𝛿_𝑚𝑜𝑑𝑒𝑙 est ({delta_mod_milieu:.4f} ± {-delta_mod_erreur:.4f})")
+print(f"𝛿_𝑚𝑜𝑑𝑒𝑙 est dans l'intervale : [{delta_mod_inf[i_print]:.4f} ; {delta_mod_sup[i_print]:.4f}]")
+print(f"Autrement dit, 𝛿_𝑚𝑜𝑑𝑒𝑙 est ({delta_mod_milieu[i_print]:.4f} ± {-delta_mod_erreur[i_print]:.4f})")
 
-E = 0.6003
-C = 10
-Uval = 0.0678
+E = 0.6001
+C = 7
+Uval = 0.2575
 
-print("###\nConclusion sur delta_model :\n")
+print("###Conclusion sur erreur modèle")
 
 if E > C * Uval:
     print("delta_model = E")
@@ -57,18 +67,19 @@ elif Uval >= E >= Uval / C:
 elif Uval/C >= E:
     print("|delta_model| < Uval \nEt pas de conclusion sur le signe de delta model")
 
-
-# Define the mean and confidence interval values
-mean = E
-conf_interval = (delta_mod_inf, delta_mod_sup)
-
 # Create the plot
 plt.figure(figsize=(6, 4))
-plt.errorbar(x=0, y=mean, yerr=[[mean - conf_interval[0]], [conf_interval[1] - mean]], fmt='o', 
-             color='blue', capsize=5, capthick=2, elinewidth=2)
+
+colors = ['blue', 'green', 'red', 'purple']
+labels = ['s_r = 1%', 's_r = 5%', 's_r = 10%', 's_r = 20%']
+
+for i in range(0,4):
+    print(i)
+    plt.errorbar(x=i, y=E, yerr=[[E - delta_mod_inf[i]], [delta_mod_sup[i] - E]], fmt='o', 
+             color=colors[i], capsize=5, capthick=2, elinewidth=2, label=labels[i])
 
 # Setting y-axis limits
-plt.ylim(-0.2, 0.8)
+plt.ylim(-0.2, 1.2)
 
 # Remove x-axis
 plt.gca().axes.get_xaxis().set_visible(False)
@@ -76,6 +87,7 @@ plt.gca().axes.get_xaxis().set_visible(False)
 # Setting labels and title
 plt.ylabel('delta_model')
 plt.title('Visualisation de l\'erreur du modèle')
+plt.legend()
 
 # Add a horizontal line at y = 0, make it black and thicker than the grid lines
 plt.axhline(y=0, color='black', linewidth=2)

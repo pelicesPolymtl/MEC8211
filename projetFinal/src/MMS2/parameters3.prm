@@ -1,0 +1,8 @@
+# Listing of Parameters
+# ---------------------
+# Problem type <couette | poiseuille | manufactured |flow around cylinder>
+set problem type       = manufactured
+
+# Viscosity
+set viscosity          = 1
+set number_of_initial_refinement          = 3

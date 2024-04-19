@@ -1,0 +1,51 @@
+lvl2:
+    Solving steady state Navier-Stokes problem in 2D: manufactured
+    ---------------------------------------------------------
+    manufactured triangulation CYL...
+    ---------------------------------------------------------
+    ------------------- MESH INFORMATION --------------------
+    ---------------------------------------------------------
+       Number of active cells: 1728
+       Total number of cells: 2268
+        Setup system ...
+       Total number of degrees of freedom: 16152
+
+lvl3: 
+    ---------------------------------------------------------
+    Solving steady state Navier-Stokes problem in 2D: manufactured
+    ---------------------------------------------------------
+    manufactured triangulation CYL...
+    ---------------------------------------------------------
+    ------------------- MESH INFORMATION --------------------
+    ---------------------------------------------------------
+       Number of active cells: 6912
+       Total number of cells: 9180
+        Setup system ...
+       Total number of degrees of freedom: 63408
+
+lvl4: 
+    ---------------------------------------------------------
+    Solving steady state Navier-Stokes problem in 2D: manufactured
+    ---------------------------------------------------------
+    manufactured triangulation CYL...
+    ---------------------------------------------------------
+    ------------------- MESH INFORMATION --------------------
+    ---------------------------------------------------------
+       Number of active cells: 27648
+       Total number of cells: 36828
+        Setup system ...
+       Total number of degrees of freedom: 251232
+lvl5 
+    ---------------------------------------------------------
+    Solving steady state Navier-Stokes problem in 2D: manufactured
+    ---------------------------------------------------------
+    manufactured triangulation CYL...
+    ---------------------------------------------------------
+    ------------------- MESH INFORMATION --------------------
+    ---------------------------------------------------------
+       Number of active cells: 110592
+       Total number of cells: 147420
+        Setup system ...
+       Total number of degrees of freedom: 1000128
+        Assembling system ...
+        Solving system ...
